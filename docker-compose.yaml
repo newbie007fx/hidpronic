@@ -1,0 +1,20 @@
+version: "3.9"
+networks:
+  net-dev:
+    driver: bridge
+services:
+  postgres:
+    image: postgres:14.5
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres_db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_USER=root
+      - POSTGRES_DB=hidroponik
+    networks:
+      - net-dev
+volumes:
+  postgres_db:
+    driver: local

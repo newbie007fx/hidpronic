@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS plants (
+  id SERIAL PRIMARY KEY, 
+  name VARCHAR (155) NOT NULL,
+  varieties VARCHAR (155) NOT NULL,
+  plant_type VARCHAR (50)  NOT NULL, 
+  generative_age INTEGER NOT NULL,
+  harvest_age INTEGER NOT NULL, 
+  nutrition_min FLOAT(32) NOT NULL,
+  nutrition_max FLOAT(32) NOT NULL,
+  nutrition_adjustment FLOAT(32) NOT NULL,
+  nutrition_targets JSONB NOT NULL,
+  ph_level FLOAT(32) NOT NULL, 
+  temperature FLOAT(32) NOT NULL,
+  plant_age INTEGER NOT NULL,
+  current_growth VARCHAR(100) NOT NULL,
+  status VARCHAR(100) NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+  actived_at TIMESTAMP WITH TIME ZONE NULL
+);
