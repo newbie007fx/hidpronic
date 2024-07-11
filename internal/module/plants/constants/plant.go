@@ -14,3 +14,17 @@ const (
 	GrowthVegetative types.Growth = "VEGETATIVE"
 	GrowthGenerative types.Growth = "GENERATIVE"
 )
+
+func PlantTypeMap() map[types.PlantType]string {
+	return map[types.PlantType]string{
+		TypeFruitCrop: "Fruit Crop",
+		TypeLeafCrop:  "Leaf Crop",
+	}
+}
+
+func GrowthTypeMap() map[types.Growth]string {
+	return map[types.Growth]string{
+		GrowthGenerative: "Generative",
+		GrowthVegetative: "Vegetative",
+	}
+}

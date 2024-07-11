@@ -1,6 +1,8 @@
 package models
 
 import (
+	"hidroponic/internal/errors"
+	"hidroponic/internal/module/plants/constants"
 	"hidroponic/internal/module/plants/types"
 	"hidroponic/internal/platform/validation"
 	"time"
@@ -49,7 +51,16 @@ type CreatePlant struct {
 }
 
 func (c *CreatePlant) Validate() error {
-	return validation.Validate(c)
+	if err := validation.Validate(c); err != nil {
+		return err
+	}
+
+	plantTypeMap := constants.PlantTypeMap()
+	if _, ok := plantTypeMap[c.PlantType]; !ok {
+		return errors.ErrorInvalidRequestBody.New("invalid plant_type value")
+	}
+
+	return nil
 }
 
 type UpdatePlant struct {
