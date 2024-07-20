@@ -60,6 +60,7 @@ func (ar apiRouter) initApiv1() {
 	apiv1Route.HandleFunc("/plants/status", ar.plantController.UpdatePlantStatus).Methods(http.MethodPut)
 	apiv1Route.HandleFunc("/plants", ar.plantController.GetAllPlant).Methods(http.MethodGet)
 	apiv1Route.HandleFunc("/plants/active", ar.plantController.GetActivePlant).Methods(http.MethodGet)
+	apiv1Route.HandleFunc("/plants/{id}", ar.plantController.GetPlantByID).Methods(http.MethodGet)
 
 	apiv1Route.HandleFunc("/installation-configs", ar.instalatinoConfigController.GetInstallationConfig).Methods(http.MethodGet)
 	apiv1Route.HandleFunc("/installation-configs", ar.instalatinoConfigController.UpdatePlant).Methods(http.MethodPut)

@@ -30,6 +30,17 @@ type Plant struct {
 	ActivedAt           *time.Time        `json:"actived_at"`
 }
 
+type BasicPlant struct {
+	ID         uint            `json:"id"`
+	Name       string          `json:"name"`
+	Varieties  string          `json:"varieties"`
+	PlantType  types.PlantType `json:"plant_type"`
+	HarvestAge int             `json:"harvest_age"`
+	Status     types.Status    `json:"status"`
+	CreatedAt  time.Time       `json:"created_at"`
+	ActivedAt  *time.Time      `json:"actived_at"`
+}
+
 type NutritionTarget struct {
 	PlantAge      int     `json:"plant_age"`
 	TargetPPM     float32 `json:"target_ppm"`
