@@ -23,7 +23,7 @@ func (u Usecase) InitiateAutomation(ctx context.Context) (resp models.InitAutoma
 		return resp, errors.New(err.Error())
 	}
 
-	plantAge := plantHelpers.GetPlantAgeInstance().CalculateAgeInDays(plant.ActivedAt.Time) + plant.PlantAge
+	plantAge := plantHelpers.GetPlantAgeInstance().CalculateAgeInDays(plant.ActivatedAt.Time) + plant.PlantAge
 	if plantAge > plant.HarvestAge {
 		plantAge = plant.HarvestAge
 	}

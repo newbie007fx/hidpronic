@@ -11,9 +11,9 @@ type ContainerConfig struct {
 }
 
 type UpdateContainerConfig struct {
-	ID         string  `validate:"required" json:"id"`
-	SensorGap  float32 `validate:"required" json:"sensor_gap"`
-	Height     float32 `validate:"required" json:"height"`
-	BottomArea float32 `validate:"required" json:"bottom_area"`
-	TopArea    float32 `validate:"required" json:"top_area"`
+	ID         string   `validate:"required" json:"id"`
+	SensorGap  *float32 `validate:"required" json:"sensor_gap"`
+	Height     float32  `validate:"required" json:"height"`
+	BottomArea float32  `validate:"required" json:"bottom_area"`
+	TopArea    float32  `validate:"required" json:"top_area"`
 }

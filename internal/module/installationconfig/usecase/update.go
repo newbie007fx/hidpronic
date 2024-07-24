@@ -40,7 +40,7 @@ func (u Usecase) UpdateInstallationConfig(ctx context.Context, data models.Updat
 }
 
 func (u Usecase) mapContainerConfigRequestToEntity(data models.UpdateContainerConfig, entity *entities.ContainerConfig) {
-	entity.SensorGap = data.SensorGap
+	entity.SensorGap = *data.SensorGap
 	entity.Height = data.Height
 	entity.BottomArea = data.BottomArea
 	entity.TopArea = data.TopArea

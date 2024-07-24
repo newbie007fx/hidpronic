@@ -11,6 +11,7 @@ import (
 type Plant struct {
 	ID                  uint              `json:"id"`
 	Name                string            `json:"name"`
+	Description         string            `json:"description"`
 	Varieties           string            `json:"varieties"`
 	PlantType           types.PlantType   `json:"plant_type"`
 	GenerativeAge       int               `json:"generative_age"`
@@ -25,20 +26,22 @@ type Plant struct {
 	CurrentAge          int               `json:"current_age,omitempty"`
 	CurrentGrowth       types.Growth      `json:"current_growth"`
 	Status              types.Status      `json:"status"`
+	Yields              int               `json:"yields"`
 	CreatedAt           time.Time         `json:"created_at"`
 	UpdatedAt           time.Time         `json:"updated_at"`
-	ActivedAt           *time.Time        `json:"actived_at"`
+	ActivatedAt         *time.Time        `json:"activated_at"`
+	HarvestedAt         *time.Time        `json:"harvested_at"`
 }
 
 type BasicPlant struct {
-	ID         uint            `json:"id"`
-	Name       string          `json:"name"`
-	Varieties  string          `json:"varieties"`
-	PlantType  types.PlantType `json:"plant_type"`
-	HarvestAge int             `json:"harvest_age"`
-	Status     types.Status    `json:"status"`
-	CreatedAt  time.Time       `json:"created_at"`
-	ActivedAt  *time.Time      `json:"actived_at"`
+	ID          uint            `json:"id"`
+	Name        string          `json:"name"`
+	Varieties   string          `json:"varieties"`
+	PlantType   types.PlantType `json:"plant_type"`
+	HarvestAge  int             `json:"harvest_age"`
+	Status      types.Status    `json:"status"`
+	CreatedAt   time.Time       `json:"created_at"`
+	ActivatedAt *time.Time      `json:"activated_at"`
 }
 
 type NutritionTarget struct {
@@ -49,6 +52,7 @@ type NutritionTarget struct {
 
 type CreatePlant struct {
 	Name                string          `validate:"required" json:"name"`
+	Description         string          `json:"description"`
 	Varieties           string          `validate:"required" json:"varieties"`
 	PlantType           types.PlantType `validate:"required" json:"plant_type"`
 	GenerativeAge       int             `json:"generative_age"`
@@ -77,6 +81,7 @@ func (c *CreatePlant) Validate() error {
 type UpdatePlant struct {
 	ID                  uint              `validate:"required" json:"id"`
 	Name                string            `validate:"required" json:"name"`
+	Description         string            `json:"description"`
 	Varieties           string            `validate:"required" json:"varieties"`
 	PlantType           types.PlantType   `validate:"required" json:"plant_type"`
 	GenerativeAge       int               `json:"generative_age"`
@@ -100,5 +105,22 @@ type UpdatePlantStatus struct {
 }
 
 func (u *UpdatePlantStatus) Validate() error {
+	if err := validation.Validate(u); err != nil {
+		return err
+	}
+
+	if u.Status != constants.StatusActivated && u.Status != constants.StatusDeactivated {
+		return errors.ErrorInvalidRequestBody.New("invalid status value")
+	}
+
+	return nil
+}
+
+type HarvestPlant struct {
+	ID     uint `validate:"required" json:"id"`
+	Yields int  `validate:"required" json:"yields"`
+}
+
+func (u *HarvestPlant) Validate() error {
 	return validation.Validate(u)
 }

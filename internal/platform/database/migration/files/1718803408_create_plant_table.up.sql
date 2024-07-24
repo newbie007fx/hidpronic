@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS plants (
   id SERIAL PRIMARY KEY, 
   name VARCHAR (155) NOT NULL,
+  description TEXT NULL,
   varieties VARCHAR (155) NOT NULL,
   plant_type VARCHAR (50)  NOT NULL, 
   generative_age INTEGER NOT NULL,
@@ -14,7 +15,9 @@ CREATE TABLE IF NOT EXISTS plants (
   plant_age INTEGER NOT NULL,
   current_growth VARCHAR(100) NOT NULL,
   status VARCHAR(100) NOT NULL,
+  yields INTEGER NOT NULL,
+  harvested_at TIMESTAMP WITH TIME ZONE NULL,
   created_at TIMESTAMP WITH TIME ZONE NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
-  actived_at TIMESTAMP WITH TIME ZONE NULL
+  activated_at TIMESTAMP WITH TIME ZONE NULL
 );

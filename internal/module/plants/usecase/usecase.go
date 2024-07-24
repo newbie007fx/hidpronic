@@ -1,7 +1,6 @@
 package usecase
 
 import (
-	"hidroponic/internal/module/plants/constants"
 	"hidroponic/internal/module/plants/entities"
 	"hidroponic/internal/module/plants/helpers"
 	"hidroponic/internal/module/plants/models"
@@ -22,6 +21,7 @@ func (u Usecase) mapEntityToModel(entity *entities.Plant) *models.Plant {
 	model := &models.Plant{
 		ID:                  entity.ID,
 		Name:                entity.Name,
+		Description:         entity.Description.String,
 		Varieties:           entity.Varieties,
 		PlantType:           entity.PlantType,
 		GenerativeAge:       entity.GenerativeAge,
@@ -35,13 +35,18 @@ func (u Usecase) mapEntityToModel(entity *entities.Plant) *models.Plant {
 		PlantAge:            entity.PlantAge,
 		CurrentGrowth:       entity.CurrentGrowth,
 		Status:              entity.Status,
+		Yields:              entity.Yields,
 		CreatedAt:           entity.CreatedAt,
 		UpdatedAt:           entity.UpdatedAt,
 	}
 
-	if entity.ActivedAt.Valid && entity.Status == constants.StatusActived {
-		model.ActivedAt = &entity.ActivedAt.Time
-		model.CurrentAge = model.PlantAge + helpers.GetPlantAgeInstance().CalculateAgeInDays(entity.ActivedAt.Time)
+	if entity.ActivatedAt.Valid {
+		model.ActivatedAt = &entity.ActivatedAt.Time
+		model.CurrentAge = model.PlantAge + helpers.GetPlantAgeInstance().CalculateAgeInDays(entity.ActivatedAt.Time)
+	}
+
+	if entity.HarvestedAt.Valid {
+		model.HarvestedAt = &entity.HarvestedAt.Time
 	}
 
 	return model

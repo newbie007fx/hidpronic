@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"database/sql"
 	"hidroponic/internal/errors"
 	"hidroponic/internal/module/plants/constants"
 	"hidroponic/internal/module/plants/entities"
@@ -13,7 +14,11 @@ func (u *Usecase) InsertPlant(ctx context.Context, createPlant models.CreatePlan
 	nutritionTargets := u.calculateNutritionTarget(&createPlant)
 
 	entity := &entities.Plant{
-		Name:                createPlant.Name,
+		Name: createPlant.Name,
+		Description: sql.NullString{
+			String: createPlant.Description,
+			Valid:  true,
+		},
 		Varieties:           createPlant.Varieties,
 		PlantType:           createPlant.PlantType,
 		GenerativeAge:       createPlant.GenerativeAge,
