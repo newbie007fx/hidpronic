@@ -29,8 +29,8 @@ func (u *Usecase) UpdatePlantStatus(ctx context.Context, data models.UpdatePlant
 	}
 
 	plant.Status = data.Status
-	if plant.Status == constants.StatusActived {
-		plant.ActivedAt = sql.NullTime{
+	if previousStatus == constants.StatusCreated && plant.Status == constants.StatusActivated {
+		plant.ActivatedAt = sql.NullTime{
 			Time:  time.Now(),
 			Valid: true,
 		}
@@ -44,10 +44,47 @@ func (u *Usecase) UpdatePlantStatus(ctx context.Context, data models.UpdatePlant
 
 	var id uint = 0
 	state := commonConstants.StateOff
-	if previousStatus == constants.StatusActived {
+	if plant.Status == constants.StatusActivated {
 		id = plant.ID
 		state = commonConstants.StateOn
 	}
+
+	plantHelpers.GetActivePlantIDInstance().Set(id)
+	helpers.GetDeviceStateInstance().SetState(state).PublishState(nil)
+
+	return nil
+}
+
+func (u *Usecase) HarvestPlant(ctx context.Context, data models.HarvestPlant) *errors.BaseError {
+	plant, err := u.repo.GetPlantByID(ctx, data.ID)
+	if err != nil {
+		return err
+	}
+
+	previousStatus := plant.Status
+	if previousStatus == constants.StatusHarvested {
+		return nil
+	}
+
+	if err := plant.ValidateStatus(constants.StatusHarvested); err != nil {
+		return errors.ErrorValidation.New("status not allowed to harvest")
+	}
+
+	plant.Status = constants.StatusHarvested
+	plant.Yields = data.Yields
+	plant.HarvestedAt = sql.NullTime{
+		Time:  time.Now(),
+		Valid: true,
+	}
+
+	plant.UpdatedAt = time.Now()
+	err = u.repo.UpdatePlant(ctx, plant)
+	if err != nil {
+		return err
+	}
+
+	var id uint = 0
+	state := commonConstants.StateOff
 
 	plantHelpers.GetActivePlantIDInstance().Set(id)
 	helpers.GetDeviceStateInstance().SetState(state).PublishState(nil)
@@ -61,11 +98,8 @@ func (u *Usecase) UpdatePlant(ctx context.Context, data models.UpdatePlant) *err
 		return err
 	}
 
-	if plant.Status == constants.StatusActived {
-		return errors.ErrorActionFobidden.New("not allowed to update")
-	}
-
 	plant.Name = data.Name
+	plant.Description = sql.NullString{String: data.Description, Valid: true}
 	plant.Varieties = data.Varieties
 	plant.PlantType = data.PlantType
 	plant.GenerativeAge = data.GenerativeAge
@@ -77,6 +111,30 @@ func (u *Usecase) UpdatePlant(ctx context.Context, data models.UpdatePlant) *err
 	plant.PHLevel = data.PHLevel
 	plant.Temperature = data.Temperature
 	plant.PlantAge = data.PlantAge
+	plant.UpdatedAt = time.Now()
+
+	return u.repo.UpdatePlant(ctx, plant)
+}
+
+func (u *Usecase) UpdatePlantGrowth(ctx context.Context, id uint) *errors.BaseError {
+	plant, err := u.repo.GetPlantByID(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	if plant.PlantType == constants.TypeLeafCrop {
+		return errors.ErrorValidation.New("action only applicable for fruit crop")
+	}
+
+	if plant.Status != constants.StatusActivated {
+		return errors.ErrorValidation.New("action only applicable for active plant")
+	}
+
+	if plant.CurrentGrowth == constants.GrowthGenerative {
+		return nil
+	}
+
+	plant.CurrentGrowth = constants.GrowthGenerative
 	plant.UpdatedAt = time.Now()
 
 	return u.repo.UpdatePlant(ctx, plant)

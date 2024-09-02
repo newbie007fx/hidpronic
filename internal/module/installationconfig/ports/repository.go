@@ -6,6 +6,7 @@ import (
 	"hidroponic/internal/module/installationconfig/entities"
 )
 
+//go:generate mockery --name Repository
 type Repository interface {
 	UpdateContainerConfig(ctx context.Context, data *entities.ContainerConfig) *errors.BaseError
 	FindContainerConfigByID(ctx context.Context, ContainerID string) (*entities.ContainerConfig, *errors.BaseError)

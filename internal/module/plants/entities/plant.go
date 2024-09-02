@@ -13,6 +13,7 @@ import (
 type Plant struct {
 	ID                  uint               `db:"id"`
 	Name                string             `db:"name"`
+	Description         sql.NullString     `db:"description"`
 	Varieties           string             `db:"varieties"`
 	PlantType           types.PlantType    `db:"plant_type"`
 	GenerativeAge       int                `db:"generative_age"`
@@ -26,22 +27,28 @@ type Plant struct {
 	PlantAge            int                `db:"plant_age"`
 	CurrentGrowth       types.Growth       `db:"current_growth"`
 	Status              types.Status       `db:"status"`
+	Yields              int                `db:"yields"`
 	CreatedAt           time.Time          `db:"created_at"`
 	UpdatedAt           time.Time          `db:"updated_at"`
-	ActivedAt           sql.NullTime       `db:"actived_at"`
+	ActivatedAt         sql.NullTime       `db:"activated_at"`
+	HarvestedAt         sql.NullTime       `db:"harvested_at"`
 }
 
 func (p Plant) ValidateStatus(targetStatus types.Status) error {
-	if targetStatus == constants.StatusDeactived || targetStatus == constants.StatusHarvested {
-		if p.Status != constants.StatusActived {
+	if targetStatus == constants.StatusDeactivated || targetStatus == constants.StatusHarvested {
+		if p.Status != constants.StatusActivated {
 			return errors.New("status transition not llaowed")
 		}
 
 		return nil
 	}
-	if targetStatus == constants.StatusActived {
+	if targetStatus == constants.StatusActivated {
+		if p.Status != constants.StatusCreated && p.Status != constants.StatusDeactivated {
+			return errors.New("status transition not llaowed")
+		}
 		return nil
 	}
+
 	return errors.New("status transition not llaowed")
 }
 

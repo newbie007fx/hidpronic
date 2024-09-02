@@ -64,13 +64,13 @@ func (cs Console) initServeCommand() {
 		dep.Init()
 
 		plantHelper.InitHelpers(dep.PlantUsecase)
-		helpers.InitHelpers(mqttService)
+		helpers.InitHelpers(mqttService, wss)
 		automationHelper.InitHelpers()
 
 		listenerMqtt := mqttListener.New(mqttService, wss, dep.InstallationConfigUsecase, dep.NutritionWaterLevelUsecase, dep.AutomationUsecase)
 		listenerMqtt.Run()
 
-		worker := workers.New(dep.PlantUsecase, dep.NutritionWaterLevelUsecase, dep.AutomationUsecase, wss)
+		worker := workers.New(dep.PlantUsecase, dep.NutritionWaterLevelUsecase, dep.AutomationUsecase, wss, config)
 		go worker.Run(ctx)
 
 		routes.Init(server, wss, dep)

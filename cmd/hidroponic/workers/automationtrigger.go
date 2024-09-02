@@ -11,7 +11,8 @@ import (
 
 func (w *Worker) AutomationTrigger(currentTime time.Time) {
 	state := helpers.GetDeviceStateInstance().GetState()
-	if currentTime.Minute()%15 == 0 && currentTime.Second() < 30 && state == constants.StateOn {
+	automationPeriode := w.configService.GetConfig().Automation.Periode
+	if currentTime.Minute()%automationPeriode == 0 && currentTime.Second() < 30 && state == constants.StateOn {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
 		defer cancel()
 

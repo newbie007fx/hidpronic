@@ -2,10 +2,12 @@ package usecase
 
 import (
 	"context"
+	"database/sql"
 	"hidroponic/internal/errors"
 	"hidroponic/internal/module/plants/constants"
 	"hidroponic/internal/module/plants/entities"
 	"hidroponic/internal/module/plants/models"
+	"math"
 	"time"
 )
 
@@ -13,7 +15,11 @@ func (u *Usecase) InsertPlant(ctx context.Context, createPlant models.CreatePlan
 	nutritionTargets := u.calculateNutritionTarget(&createPlant)
 
 	entity := &entities.Plant{
-		Name:                createPlant.Name,
+		Name: createPlant.Name,
+		Description: sql.NullString{
+			String: createPlant.Description,
+			Valid:  true,
+		},
 		Varieties:           createPlant.Varieties,
 		PlantType:           createPlant.PlantType,
 		GenerativeAge:       createPlant.GenerativeAge,
@@ -49,7 +55,7 @@ func (u *Usecase) calculateNutritionTarget(createPlant *models.CreatePlant) []mo
 			PlantAge:  createPlant.PlantAge + i,
 			TargetPPM: createPlant.NutritionMin + x*u.getGrowthPercentage(i, um)/100,
 		}
-
+		target.TargetPPM = float32(math.Round(float64(target.TargetPPM)))
 		nutritionTargets = append(nutritionTargets, target)
 	}
 

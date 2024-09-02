@@ -4,8 +4,9 @@ import (
 	"slices"
 )
 
-const RESULT_MIN_VALUE float32 = 0
-const RESULT_MAX_VALUE float32 = 1
+const RESULT_MIN_VALUE float32 = 1
+const RESULT_MAX_VALUE float32 = 3
+const THRESHOLD = 2
 
 type TsukamotoFIS struct {
 	LowNutritionTarget      float32
@@ -17,6 +18,16 @@ type TsukamotoFIS struct {
 	LowWaterVolume          float32
 	MediumWaterVolume       float32
 	HighWaterVolume         float32
+}
+
+func (f TsukamotoFIS) CalculateLowTemperature(temperature float32) float32 {
+	if temperature <= f.LowTemperatureValue {
+		return 1
+	} else if temperature >= f.LowTemperatureValue && temperature <= f.OptimalTemperatureValue {
+		return (f.OptimalTemperatureValue - temperature) / (f.OptimalTemperatureValue - f.LowTemperatureValue)
+	}
+
+	return 0
 }
 
 func (f TsukamotoFIS) CalculateOptimalTemperature(temperature float32) float32 {
@@ -43,7 +54,7 @@ func (f TsukamotoFIS) CalculateLowNutrition(nutritionTarget float32) float32 {
 	if nutritionTarget <= f.LowNutritionTarget {
 		return 1
 	} else if nutritionTarget >= f.LowNutritionTarget && nutritionTarget <= f.OptimalNutritionTarget {
-		return (f.HighNutritionTarget - nutritionTarget) / (f.OptimalNutritionTarget - f.LowNutritionTarget)
+		return (f.OptimalNutritionTarget - nutritionTarget) / (f.OptimalNutritionTarget - f.LowNutritionTarget)
 	}
 
 	return 0
@@ -73,7 +84,7 @@ func (f TsukamotoFIS) CalculateLowWaterVolume(waterVolume float32) float32 {
 	if waterVolume <= f.LowWaterVolume {
 		return 1
 	} else if waterVolume >= f.LowWaterVolume && waterVolume <= f.MediumWaterVolume {
-		return (f.HighWaterVolume - waterVolume) / (f.MediumWaterVolume - f.LowWaterVolume)
+		return (f.MediumWaterVolume - waterVolume) / (f.MediumWaterVolume - f.LowWaterVolume)
 	}
 
 	return 0
@@ -100,33 +111,58 @@ func (f TsukamotoFIS) CalculateHighWaterVolume(waterVolume float32) float32 {
 }
 
 func (f TsukamotoFIS) Inference(temperature, nutrition, volume float32) float32 {
-	rules := [][]float32{
+	rulesOn := [][]float32{
+		{f.CalculateLowTemperature(temperature), f.CalculateLowNutrition(nutrition), f.CalculateLowWaterVolume(volume)},
 		{f.CalculateOptimalTemperature(temperature), f.CalculateLowNutrition(nutrition), f.CalculateLowWaterVolume(volume)},
 		{f.CalculateHighTemperature(temperature), f.CalculateLowNutrition(nutrition), f.CalculateLowWaterVolume(volume)},
+
+		{f.CalculateLowTemperature(temperature), f.CalculateOptimalNutrition(nutrition), f.CalculateLowWaterVolume(volume)},
 		{f.CalculateOptimalTemperature(temperature), f.CalculateOptimalNutrition(nutrition), f.CalculateLowWaterVolume(volume)},
 		{f.CalculateHighTemperature(temperature), f.CalculateOptimalNutrition(nutrition), f.CalculateLowWaterVolume(volume)},
+
+		{f.CalculateLowTemperature(temperature), f.CalculateHighNutrition(nutrition), f.CalculateLowWaterVolume(volume)},
 		{f.CalculateOptimalTemperature(temperature), f.CalculateHighNutrition(nutrition), f.CalculateLowWaterVolume(volume)},
 		{f.CalculateHighTemperature(temperature), f.CalculateHighNutrition(nutrition), f.CalculateLowWaterVolume(volume)},
 
+		{f.CalculateLowTemperature(temperature), f.CalculateLowNutrition(nutrition), f.CalculateMediumWaterVolume(volume)},
 		{f.CalculateOptimalTemperature(temperature), f.CalculateLowNutrition(nutrition), f.CalculateMediumWaterVolume(volume)},
 		{f.CalculateHighTemperature(temperature), f.CalculateLowNutrition(nutrition), f.CalculateMediumWaterVolume(volume)},
-		{f.CalculateOptimalTemperature(temperature), f.CalculateOptimalNutrition(nutrition), f.CalculateMediumWaterVolume(volume)},
+
 		{f.CalculateHighTemperature(temperature), f.CalculateOptimalNutrition(nutrition), f.CalculateMediumWaterVolume(volume)},
+
+		{f.CalculateLowTemperature(temperature), f.CalculateHighNutrition(nutrition), f.CalculateMediumWaterVolume(volume)},
 		{f.CalculateOptimalTemperature(temperature), f.CalculateHighNutrition(nutrition), f.CalculateMediumWaterVolume(volume)},
 		{f.CalculateHighTemperature(temperature), f.CalculateHighNutrition(nutrition), f.CalculateMediumWaterVolume(volume)},
 
+		{f.CalculateLowTemperature(temperature), f.CalculateLowNutrition(nutrition), f.CalculateHighWaterVolume(volume)},
 		{f.CalculateOptimalTemperature(temperature), f.CalculateLowNutrition(nutrition), f.CalculateHighWaterVolume(volume)},
 		{f.CalculateHighTemperature(temperature), f.CalculateLowNutrition(nutrition), f.CalculateHighWaterVolume(volume)},
+	}
+
+	rulesOff := [][]float32{
+		{f.CalculateLowTemperature(temperature), f.CalculateOptimalNutrition(nutrition), f.CalculateMediumWaterVolume(volume)},
+		{f.CalculateOptimalTemperature(temperature), f.CalculateOptimalNutrition(nutrition), f.CalculateMediumWaterVolume(volume)},
+
+		{f.CalculateLowTemperature(temperature), f.CalculateOptimalNutrition(nutrition), f.CalculateHighWaterVolume(volume)},
 		{f.CalculateOptimalTemperature(temperature), f.CalculateOptimalNutrition(nutrition), f.CalculateHighWaterVolume(volume)},
 		{f.CalculateHighTemperature(temperature), f.CalculateOptimalNutrition(nutrition), f.CalculateHighWaterVolume(volume)},
+
+		{f.CalculateLowTemperature(temperature), f.CalculateHighNutrition(nutrition), f.CalculateHighWaterVolume(volume)},
 		{f.CalculateOptimalTemperature(temperature), f.CalculateHighNutrition(nutrition), f.CalculateHighWaterVolume(volume)},
 		{f.CalculateHighTemperature(temperature), f.CalculateHighNutrition(nutrition), f.CalculateHighWaterVolume(volume)},
 	}
 
 	var numerator, denominator float32
-	for _, rule := range rules {
+	for _, rule := range rulesOn {
 		alphaPredicate := slices.Min(rule)
-		zRule := alphaPredicate - RESULT_MIN_VALUE/RESULT_MAX_VALUE
+		zRule := RESULT_MAX_VALUE*alphaPredicate + RESULT_MIN_VALUE
+		numerator += alphaPredicate * zRule
+		denominator += alphaPredicate
+	}
+
+	for _, rule := range rulesOff {
+		alphaPredicate := slices.Min(rule)
+		zRule := RESULT_MAX_VALUE - alphaPredicate*(RESULT_MAX_VALUE-RESULT_MIN_VALUE)
 		numerator += alphaPredicate * zRule
 		denominator += alphaPredicate
 	}

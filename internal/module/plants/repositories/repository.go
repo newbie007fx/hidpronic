@@ -23,7 +23,7 @@ func New(db *database.DatabaseService) ports.Repository {
 }
 
 func (r Repository) GetAllPlant(ctx context.Context) ([]entities.Plant, *errors.BaseError) {
-	query := `SELECT "id", "name", "varieties", "plant_type", "generative_age", "harvest_age", "nutrition_min", "nutrition_max", "nutrition_adjustment", "nutrition_targets", "ph_level", "temperature", "plant_age", "current_growth", "status", "created_at", "updated_at", "actived_at" FROM plants ORDER BY "status" ASC`
+	query := `SELECT "id", "name", "description", "varieties", "plant_type", "generative_age", "harvest_age", "nutrition_min", "nutrition_max", "nutrition_adjustment", "nutrition_targets", "ph_level", "temperature", "plant_age", "current_growth", "status", "yields", "created_at", "updated_at", "activated_at", "harvested_at" FROM plants ORDER BY "created_at" DESC`
 
 	var result []entities.Plant
 	err := r.DB.SelectContext(ctx, &result, query)
@@ -35,7 +35,7 @@ func (r Repository) GetAllPlant(ctx context.Context) ([]entities.Plant, *errors.
 }
 
 func (r Repository) GetPlantByID(ctx context.Context, id uint) (*entities.Plant, *errors.BaseError) {
-	query := `SELECT "id", "name", "varieties", "plant_type", "generative_age", "harvest_age", "nutrition_min", "nutrition_max", "nutrition_adjustment", "nutrition_targets", "ph_level", "temperature", "plant_age", "current_growth", "status", "created_at", "updated_at", "actived_at" FROM plants WHERE "id" = $1`
+	query := `SELECT "id", "name", "description", "varieties", "plant_type", "generative_age", "harvest_age", "nutrition_min", "nutrition_max", "nutrition_adjustment", "nutrition_targets", "ph_level", "temperature", "plant_age", "current_growth", "status", "yields", "created_at", "updated_at", "activated_at", "harvested_at" FROM plants WHERE "id" = $1`
 
 	var result entities.Plant
 	err := r.DB.GetContext(ctx, &result, query, id)
@@ -50,10 +50,10 @@ func (r Repository) GetPlantByID(ctx context.Context, id uint) (*entities.Plant,
 }
 
 func (r Repository) GetActivePlant(ctx context.Context) (*entities.Plant, *errors.BaseError) {
-	query := `SELECT "id", "name", "varieties", "plant_type", "generative_age", "harvest_age", "nutrition_min", "nutrition_max", "nutrition_adjustment", "nutrition_targets", "ph_level", "temperature", "plant_age", "current_growth", "status", "created_at", "updated_at", "actived_at" FROM plants WHERE "status" = $1`
+	query := `SELECT "id", "name", "description" "varieties", "plant_type", "generative_age", "harvest_age", "nutrition_min", "nutrition_max", "nutrition_adjustment", "nutrition_targets", "ph_level", "temperature", "plant_age", "current_growth", "status", "yields", "created_at", "updated_at", "activated_at", "harvested_at" FROM plants WHERE "status" = $1`
 
 	var result entities.Plant
-	err := r.DB.GetContext(ctx, &result, query, constants.StatusActived)
+	err := r.DB.GetContext(ctx, &result, query, constants.StatusActivated)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errors.ErrorQueryNoRow.New("active plant not found")
@@ -65,12 +65,12 @@ func (r Repository) GetActivePlant(ctx context.Context) (*entities.Plant, *error
 }
 
 func (r Repository) InsertPlant(ctx context.Context, data *entities.Plant) *errors.BaseError {
-	plainQuery := `INSERT INTO plants ("name", "varieties", "plant_type", "generative_age", "harvest_age", "nutrition_min", "nutrition_max",
-	"nutrition_adjustment", "nutrition_targets", "ph_level", "temperature", "plant_age", "current_growth", "status", "created_at", "updated_at",
-	"actived_at") 
+	plainQuery := `INSERT INTO plants ("name", "description", "varieties", "plant_type", "generative_age", "harvest_age", "nutrition_min", "nutrition_max",
+	"nutrition_adjustment", "nutrition_targets", "ph_level", "temperature", "plant_age", "current_growth", "status", "yields", "created_at", "updated_at",
+	"activated_at", "harvested_at") 
 	VALUES 
-	(:name, :varieties, :plant_type, :generative_age, :harvest_age, :nutrition_min, :nutrition_max, :nutrition_adjustment, :nutrition_targets, :ph_level,
-	:temperature, :plant_age, :current_growth, :status, :created_at, :updated_at, :actived_at) RETURNING id`
+	(:name, :description, :varieties, :plant_type, :generative_age, :harvest_age, :nutrition_min, :nutrition_max, :nutrition_adjustment, :nutrition_targets, :ph_level,
+	:temperature, :plant_age, :current_growth, :status, :yields, :created_at, :updated_at, :activated_at, :harvested_at) RETURNING id`
 
 	query, args, err := sqlx.Named(plainQuery, data)
 	if err != nil {
@@ -90,13 +90,24 @@ func (r Repository) InsertPlant(ctx context.Context, data *entities.Plant) *erro
 }
 
 func (r Repository) UpdatePlant(ctx context.Context, data *entities.Plant) *errors.BaseError {
-	query := `UPDATE plants SET "name" = :name, "varieties" = :varieties, "plant_type" = :plant_type, "generative_age" = :generative_age, 
+	query := `UPDATE plants SET "name" = :name, "description" = :description, "varieties" = :varieties, "plant_type" = :plant_type, "generative_age" = :generative_age, 
 	"harvest_age" = :harvest_age, "nutrition_min" = :nutrition_min, "nutrition_max" = :nutrition_max, "nutrition_adjustment" = :nutrition_adjustment,
-	"nutrition_targets" = :nutrition_targets, "ph_level" = :ph_level, "temperature" = :temperature, "plant_age" = :plant_age, 
-	"current_growth" = :current_growth, "status" = :status, "created_at" = :created_at, "updated_at" = :updated_at, "actived_at" = :actived_at 
+	"nutrition_targets" = :nutrition_targets, "ph_level" = :ph_level, "temperature" = :temperature, "plant_age" = :plant_age, "current_growth" = :current_growth, 
+	"status" = :status, "yields" = :yields, "created_at" = :created_at, "updated_at" = :updated_at, "activated_at" = :activated_at, "harvested_at" = :harvested_at 
 	WHERE "id" = :id`
 
 	_, err := r.DB.NamedExecContext(ctx, query, data)
+	if err != nil {
+		return errors.ErrorQueryDatabase.New(err.Error())
+	}
+
+	return nil
+}
+
+func (r Repository) DeletePlant(ctx context.Context, id uint) *errors.BaseError {
+	query := `DELETE FROM plants WHERE "id" = $1 AND status != $2`
+
+	_, err := r.DB.ExecContext(ctx, query, id, constants.StatusActivated)
 	if err != nil {
 		return errors.ErrorQueryDatabase.New(err.Error())
 	}

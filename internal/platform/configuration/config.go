@@ -2,6 +2,7 @@ package configuration
 
 type Config struct {
 	App        ConfigApp         `mapstructure:"app"`
+	Automation ConfigAutomation  `mapstructure:"automation"`
 	Server     ConfigServer      `mapstructure:"server"`
 	Database   ConfigDatabase    `mapstructure:"database"`
 	CorsConfig CorsConfiguration `mapstructure:"cors_config"`
@@ -12,6 +13,10 @@ type Config struct {
 type ConfigApp struct {
 	Env      string `mapstructure:"env"`
 	LogLevel string `mapstructure:"log_level"`
+}
+
+type ConfigAutomation struct {
+	Periode int `mapstructure:"periode"`
 }
 
 type ConfigServer struct {

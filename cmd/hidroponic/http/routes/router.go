@@ -3,6 +3,8 @@ package routes
 import (
 	"hidroponic/cmd/hidroponic/dependencies"
 	"hidroponic/cmd/hidroponic/http/handler/authentication"
+	"hidroponic/cmd/hidroponic/http/handler/automation"
+	"hidroponic/cmd/hidroponic/http/handler/devicestate"
 	"hidroponic/cmd/hidroponic/http/handler/installationconfig"
 	"hidroponic/cmd/hidroponic/http/handler/nutritionwaterlevel"
 	"hidroponic/cmd/hidroponic/http/handler/plant"
@@ -21,9 +23,11 @@ type apiRouter struct {
 	baseRoute                     *mux.Router
 	wss                           *websocket.WebSocketService
 	authController                *authentication.AuthHandlers
+	automationController          *automation.AutomationHandlers
 	nutritionWaterLevelController *nutritionwaterlevel.NutritionWaterLevelHandlers
 	plantController               *plant.PlantHandlers
 	instalatinoConfigController   *installationconfig.InstallationConfigHandlers
+	deviceStateController         *devicestate.DeviceStateHnalders
 }
 
 func Init(httpService *httpserver.HttpService, wss *websocket.WebSocketService, dep *dependencies.Dependency) {
@@ -32,9 +36,11 @@ func Init(httpService *httpserver.HttpService, wss *websocket.WebSocketService, 
 		wss:                           wss,
 		dep:                           dep,
 		authController:                authentication.New(dep.UserUsecase, dep.AuthToken),
+		automationController:          automation.New(dep.AutomationUsecase),
 		nutritionWaterLevelController: nutritionwaterlevel.New(dep.NutritionWaterLevelUsecase),
 		plantController:               plant.New(dep.PlantUsecase),
 		instalatinoConfigController:   installationconfig.New(dep.InstallationConfigUsecase),
+		deviceStateController:         devicestate.New(),
 	}
 
 	router.baseRoute.HandleFunc("/ping", router.ping).Methods(http.MethodGet)
@@ -53,6 +59,10 @@ func (ar apiRouter) initApiv1() {
 	apiv1Route := ar.baseRoute.PathPrefix("/api/v1").Subrouter()
 
 	apiv1Route.Use(middleware.Auth(ar.dep.AuthToken))
+
+	apiv1Route.HandleFunc("/automations", ar.automationController.GetAllAutomation).Methods(http.MethodGet)
+	apiv1Route.HandleFunc("/automations/{id}", ar.automationController.GetAutomationByID).Methods(http.MethodGet)
+
 	apiv1Route.HandleFunc("/nutrition-water-levels", ar.nutritionWaterLevelController.GetActivePlantNutritionWaterLevel).Methods(http.MethodGet)
 
 	apiv1Route.HandleFunc("/plants", ar.plantController.InsertPlant).Methods(http.MethodPost)
@@ -60,10 +70,15 @@ func (ar apiRouter) initApiv1() {
 	apiv1Route.HandleFunc("/plants/status", ar.plantController.UpdatePlantStatus).Methods(http.MethodPut)
 	apiv1Route.HandleFunc("/plants", ar.plantController.GetAllPlant).Methods(http.MethodGet)
 	apiv1Route.HandleFunc("/plants/active", ar.plantController.GetActivePlant).Methods(http.MethodGet)
+	apiv1Route.HandleFunc("/plants/harvest", ar.plantController.HarvestPlant).Methods(http.MethodPut)
 	apiv1Route.HandleFunc("/plants/{id}", ar.plantController.GetPlantByID).Methods(http.MethodGet)
+	apiv1Route.HandleFunc("/plants/{id}", ar.plantController.DeletePlant).Methods(http.MethodDelete)
+	apiv1Route.HandleFunc("/plants/{id}/growth", ar.plantController.UpdatePlantGrowth).Methods(http.MethodPut)
 
 	apiv1Route.HandleFunc("/installation-configs", ar.instalatinoConfigController.GetInstallationConfig).Methods(http.MethodGet)
 	apiv1Route.HandleFunc("/installation-configs", ar.instalatinoConfigController.UpdatePlant).Methods(http.MethodPut)
+
+	apiv1Route.HandleFunc("/device-states", ar.deviceStateController.GetDeviceState).Methods(http.MethodGet)
 }
 
 func (apiRouter) notFound(w http.ResponseWriter, r *http.Request) {

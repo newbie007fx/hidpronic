@@ -14,6 +14,11 @@ func (u Usecase) UpdateInstallationConfig(ctx context.Context, data models.Updat
 	}
 	installation.NutritionPPM = data.NutritionPPM
 	installation.RawWaterPPM = data.RawWaterPPM
+	installation.FuzzyNutritionWaterLevelPercent = data.FuzzyNutritionWaterLevelPercent
+	installation.FuzzyNutritionWaterVolumeHigh = data.FuzzyNutritionWaterVolumeHigh
+	installation.FuzzyNutritionWaterVolumeLow = data.FuzzyNutritionWaterVolumeLow
+	installation.FuzzyNutritionWaterVolumeMedium = data.FuzzyNutritionWaterVolumeMedium
+	installation.FuzzyWaterTemperaturePercent = data.FuzzyWaterTemperaturePercent
 	err = u.repo.UpdateInstallationConfig(ctx, installation)
 	if err != nil {
 		return err
@@ -40,7 +45,7 @@ func (u Usecase) UpdateInstallationConfig(ctx context.Context, data models.Updat
 }
 
 func (u Usecase) mapContainerConfigRequestToEntity(data models.UpdateContainerConfig, entity *entities.ContainerConfig) {
-	entity.SensorGap = data.SensorGap
+	entity.SensorGap = *data.SensorGap
 	entity.Height = data.Height
 	entity.BottomArea = data.BottomArea
 	entity.TopArea = data.TopArea

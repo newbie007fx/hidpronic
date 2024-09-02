@@ -7,9 +7,10 @@ import (
 )
 
 type Repository interface {
-	GetAllAutomationWithLimit(ctx context.Context, limit int) ([]entities.Automation, *errors.BaseError)
+	GetAllAutomation(ctx context.Context, limit, offset int, filter map[string]string) ([]entities.Automation, *errors.BaseError)
 	GetAutomationByID(ctx context.Context, id uint) (*entities.Automation, *errors.BaseError)
 
 	InsertAutomation(ctx context.Context, data *entities.Automation) *errors.BaseError
 	UpdateAutomation(ctx context.Context, data *entities.Automation) *errors.BaseError
+	DeleteAutomationByPlantID(ctx context.Context, plantID uint) *errors.BaseError
 }

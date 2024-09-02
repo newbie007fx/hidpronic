@@ -13,4 +13,5 @@ type Repository interface {
 
 	InsertPlant(ctx context.Context, data *entities.Plant) *errors.BaseError
 	UpdatePlant(ctx context.Context, data *entities.Plant) *errors.BaseError
+	DeletePlant(ctx context.Context, id uint) *errors.BaseError
 }

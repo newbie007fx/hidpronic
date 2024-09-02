@@ -14,4 +14,7 @@ type Usecase interface {
 	InsertPlant(ctx context.Context, createPlant models.CreatePlant) (resp *models.Plant, err *errors.BaseError)
 	UpdatePlantStatus(ctx context.Context, data models.UpdatePlantStatus) *errors.BaseError
 	UpdatePlant(ctx context.Context, data models.UpdatePlant) *errors.BaseError
+	DeletePlant(ctx context.Context, id uint) *errors.BaseError
+	HarvestPlant(ctx context.Context, data models.HarvestPlant) *errors.BaseError
+	UpdatePlantGrowth(ctx context.Context, id uint) *errors.BaseError
 }

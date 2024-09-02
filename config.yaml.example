@@ -2,6 +2,9 @@ app:
   env: "local"
   log_level: "INFO"
 
+automation:
+  periode: 15
+
 server:
   port: "8183"
 
