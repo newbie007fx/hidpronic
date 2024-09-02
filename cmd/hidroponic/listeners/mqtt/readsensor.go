@@ -44,7 +44,7 @@ func (ml MqttListener) processPayload(payload []ReadSensorPayload, plantID uint)
 		wsPayload := sensor.DataValueWs{
 			DataType:   sensor.MapSensorToDataType[readSensor.Sensor],
 			ActionType: sensor.ActionReadValue,
-			Value:      float32(math.Round(float64(readSensor.Value)*100) / 100),
+			Value:      readSensor.Value,
 			CreatedAt:  time.Now().UnixMilli(),
 		}
 
@@ -55,6 +55,7 @@ func (ml MqttListener) processPayload(payload []ReadSensorPayload, plantID uint)
 				slog.Warn(err.Error())
 			}
 		}
+		wsPayload.Value = float32(math.Round(float64(wsPayload.Value)*100) / 100)
 
 		if readSensor.Sensor == sensor.SensorNutitionWaterLevel {
 			req := models.CreateNutritionWaterLevel{

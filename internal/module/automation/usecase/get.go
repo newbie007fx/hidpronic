@@ -22,12 +22,14 @@ func (u Usecase) GetAllAutomation(ctx context.Context, limit, offset int, filter
 			Duration:    res.Duration,
 			Status:      res.Status,
 			TriggeredAt: res.TriggeredAt,
-			FinishedAt:  res.FinishedAt.Time,
 			Plant: models.SimplePlant{
 				ID:        res.PlantID,
 				Name:      res.Plant.Name,
 				Varieties: res.Plant.Varieties,
 			},
+		}
+		if res.FinishedAt.Valid {
+			basicPlant.FinishedAt = &res.FinishedAt.Time
 		}
 		resp = append(resp, basicPlant)
 	}
@@ -51,12 +53,14 @@ func (u Usecase) GetAutomationByID(ctx context.Context, id uint) (resp models.Au
 		Duration:    result.Duration,
 		Status:      result.Status,
 		TriggeredAt: result.TriggeredAt,
-		FinishedAt:  result.FinishedAt.Time,
 		Plant: models.SimplePlant{
 			ID:        result.PlantID,
 			Name:      result.Plant.Name,
 			Varieties: result.Plant.Varieties,
 		},
+	}
+	if result.FinishedAt.Valid {
+		resp.FinishedAt = &result.FinishedAt.Time
 	}
 
 	return

@@ -14,6 +14,11 @@ func (u Usecase) UpdateInstallationConfig(ctx context.Context, data models.Updat
 	}
 	installation.NutritionPPM = data.NutritionPPM
 	installation.RawWaterPPM = data.RawWaterPPM
+	installation.FuzzyNutritionWaterLevelPercent = data.FuzzyNutritionWaterLevelPercent
+	installation.FuzzyNutritionWaterVolumeHigh = data.FuzzyNutritionWaterVolumeHigh
+	installation.FuzzyNutritionWaterVolumeLow = data.FuzzyNutritionWaterVolumeLow
+	installation.FuzzyNutritionWaterVolumeMedium = data.FuzzyNutritionWaterVolumeMedium
+	installation.FuzzyWaterTemperaturePercent = data.FuzzyWaterTemperaturePercent
 	err = u.repo.UpdateInstallationConfig(ctx, installation)
 	if err != nil {
 		return err

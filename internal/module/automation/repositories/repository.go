@@ -72,7 +72,7 @@ func (r Repository) GetAutomationByID(ctx context.Context, id uint) (*entities.A
 func (r Repository) InsertAutomation(ctx context.Context, data *entities.Automation) *errors.BaseError {
 	plainQuery := `INSERT INTO automation ("plant_id", "after_data", "before_data", "accuration", "target_ppm", "duration", "status", "triggered_at", "finished_at") 
 	VALUES 
-	(:plant_id, :after_data, :before_data, :accuration, :target_ppm", :duration, status, :triggered_at, :finished_at) RETURNING id`
+	(:plant_id, :after_data, :before_data, :accuration, :target_ppm, :duration, :status, :triggered_at, :finished_at) RETURNING id`
 
 	query, args, err := sqlx.Named(plainQuery, data)
 	if err != nil {
@@ -92,7 +92,7 @@ func (r Repository) InsertAutomation(ctx context.Context, data *entities.Automat
 }
 
 func (r Repository) UpdateAutomation(ctx context.Context, data *entities.Automation) *errors.BaseError {
-	query := `UPDATE automation SET "plant_id" = :plant_id, "after_data" = :aftar_data, "before_data" = :berfore_data, "accuration" = :accuration, "target_ppm" = :target_ppm, "duration" = :duration, "status" = :status, "triggered_at"  :triggered_at, "finished_at" = :finished_at 
+	query := `UPDATE automation SET "plant_id" = :plant_id, "after_data" = :after_data, "before_data" = :before_data, "accuration" = :accuration, "target_ppm" = :target_ppm, "duration" = :duration, "status" = :status, "triggered_at" = :triggered_at, "finished_at" = :finished_at 
 	WHERE "id" = :id`
 
 	_, err := r.DB.NamedExecContext(ctx, query, data)

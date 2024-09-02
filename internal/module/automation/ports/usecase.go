@@ -12,4 +12,6 @@ type Usecase interface {
 
 	GetAllAutomation(ctx context.Context, limit, offset int, filter map[string]string) (resp []models.AutomationBasic, err *errors.BaseError)
 	GetAutomationByID(ctx context.Context, id uint) (resp models.Automation, err *errors.BaseError)
+
+	CalculateNutritionNeeded(data models.CalculateNutritionNeeded) (rawWaterVolume, nutritionVolume float32)
 }

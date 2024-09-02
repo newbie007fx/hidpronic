@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"hidroponic/internal/constants"
 	"hidroponic/internal/helpers"
 	automationHelpers "hidroponic/internal/module/automation/helpers"
 	"hidroponic/internal/module/automation/models"
@@ -37,7 +38,10 @@ func (ml MqttListener) listenClientState() {
 			})
 			if err != nil {
 				slog.Error(fmt.Sprintf("error complete automation with message: %s", err.Error()))
+				return
 			}
+			helpers.GetDeviceStateInstance().SetState(constants.StateComplete)
+			ml.ws.Broadcast("automation", map[string]bool{"update": true})
 		default:
 			slog.Error(fmt.Sprintf("error, unidentified action: %s", payloadData.Action))
 		}

@@ -6,6 +6,7 @@ import (
 	"hidroponic/internal/module/automation/constants"
 	"hidroponic/internal/module/automation/entities"
 	"hidroponic/internal/module/automation/models"
+	"math"
 )
 
 func (u Usecase) CompleteAutomation(ctx context.Context, automationID uint, data models.CompleteAutomation) error {
@@ -25,8 +26,11 @@ func (u Usecase) CompleteAutomation(ctx context.Context, automationID uint, data
 	automation.Status = constants.StatusComplete
 
 	err = u.repo.UpdateAutomation(ctx, automation)
+	if err != nil {
+		return err.ToError()
+	}
 
-	return err
+	return nil
 }
 
 func calculateAccuration(target, result float32) float32 {
@@ -35,5 +39,7 @@ func calculateAccuration(target, result float32) float32 {
 		diff = diff * -1
 	}
 
-	return (1 - (diff / target)) * 100
+	accurationPercent := (1 - (diff / target)) * 100
+
+	return float32(math.Round(float64(accurationPercent)*100) / 100)
 }

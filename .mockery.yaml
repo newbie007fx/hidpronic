@@ -1,0 +1,14 @@
+with-expecter: true
+dir: "{{.InterfaceDir}}/mocks"
+filename: "mock_{{ .InterfaceName | lower }}.go"
+outpkg: "mocks"
+packages:
+  hidroponic/internal/module/automation/ports:
+    interfaces:
+      Repository:
+  hidroponic/internal/module/installationconfig/ports:
+    interfaces:
+      Repository:
+  hidroponic/internal/module/plants/ports:
+    interfaces:
+      Repository:

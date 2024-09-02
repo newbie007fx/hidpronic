@@ -64,7 +64,7 @@ func (u Usecase) InitiateAutomation(ctx context.Context) (resp models.InitAutoma
 
 	log.Println("fuzzy value result is ", fuzzyValue)
 
-	if fuzzyValue <= 0.5 {
+	if fuzzyValue <= fuzzy.THRESHOLD {
 		return resp, errors.New("fuzzy value is under threshold")
 	}
 
@@ -83,7 +83,7 @@ func (u Usecase) InitiateAutomation(ctx context.Context) (resp models.InitAutoma
 		return resp, errors.New(err.Error())
 	}
 
-	targetWaterVolume, nutritionTargetVolume := u.calcualteNutritionNeeded(models.CalcualteNutritionNeeded{
+	targetWaterVolume, nutritionTargetVolume := u.CalculateNutritionNeeded(models.CalculateNutritionNeeded{
 		CurrentNutritionWaterVolume: lastSensorData.NutritionWaterVolume,
 		TargetNutritionWaterVolume:  containerConf.Volume,
 		CurrentNutritionWaterPPM:    lastSensorData.NutritionWaterPPM,
@@ -126,26 +126,25 @@ func (u *Usecase) getFuzzyValue(targetPPM float32, plant *plantEntities.Plant, i
 	return result
 }
 
-func (u Usecase) calcualteNutritionNeeded(data models.CalcualteNutritionNeeded) (rawWaterVolume, nutritionVolume float32) {
+// x = nutritionVolume
+// y = raw waterVolume
+// x + y = neededVolume (1)
+// nutrtionWaterPPM * x + rawWaterPPM * y = neededSolution (2)
+// find y
+// rawWaterPPM * y = neededSolution - nutritionWaterPPM * x
+// y = neededSolution/rawWaterPPM - nutritionWaterPPM * x / rawWaterPPM
+// subtitute y find x
+// x + y = neededVolume
+// x + neededSolution/rawWaterPPM - nutritionWaterPPM * x / rawWaterPPM = neededVolume
+// x - nutritionWaterPPM * x /rawWaterPPM = neededVolume - neededSolution/rawWaterVolume
+// x = (neededSolution/rawWaterVolume - neededVolume) / (nutritionWaterPPM/rawWaterVolume - 1)
+func (u Usecase) CalculateNutritionNeeded(data models.CalculateNutritionNeeded) (rawWaterVolume, nutritionVolume float32) {
 	neededVolume := data.TargetNutritionWaterVolume - data.CurrentNutritionWaterVolume
 	neededSolution := data.TargetNutritionWaterVolume*data.TargetNutritionWaterPPM - data.CurrentNutritionWaterVolume*data.CurrentNutritionWaterPPM
 
-	matrixA := [2][2]float32{
-		{1, 1},
-		{data.RawWaterPPM, data.NutritionPPM},
-	}
+	nutritionVolume = (neededSolution/data.RawWaterPPM - neededVolume) / (data.NutritionPPM/data.RawWaterPPM - 1)
 
-	matrixB := [2]float32{neededVolume, neededSolution}
-
-	detA := matrixA[0][0]*matrixA[1][1] - matrixA[0][1]*matrixA[1][0]
-
-	invA := [2][2]float32{
-		{matrixA[1][1] / detA, -matrixA[0][1] / detA},
-		{-matrixA[1][0] / detA, matrixA[0][0] / detA},
-	}
-
-	rawWaterVolume = invA[0][0]*matrixB[0] + invA[0][1]*matrixB[1]
-	nutritionVolume = invA[1][0]*matrixB[0] + invA[1][1]*matrixB[1]
+	rawWaterVolume = neededVolume - nutritionVolume
 
 	return
 }

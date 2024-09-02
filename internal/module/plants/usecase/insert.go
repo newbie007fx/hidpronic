@@ -7,6 +7,7 @@ import (
 	"hidroponic/internal/module/plants/constants"
 	"hidroponic/internal/module/plants/entities"
 	"hidroponic/internal/module/plants/models"
+	"math"
 	"time"
 )
 
@@ -54,7 +55,7 @@ func (u *Usecase) calculateNutritionTarget(createPlant *models.CreatePlant) []mo
 			PlantAge:  createPlant.PlantAge + i,
 			TargetPPM: createPlant.NutritionMin + x*u.getGrowthPercentage(i, um)/100,
 		}
-
+		target.TargetPPM = float32(math.Round(float64(target.TargetPPM)))
 		nutritionTargets = append(nutritionTargets, target)
 	}
 

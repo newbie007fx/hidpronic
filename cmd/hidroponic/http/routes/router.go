@@ -4,6 +4,7 @@ import (
 	"hidroponic/cmd/hidroponic/dependencies"
 	"hidroponic/cmd/hidroponic/http/handler/authentication"
 	"hidroponic/cmd/hidroponic/http/handler/automation"
+	"hidroponic/cmd/hidroponic/http/handler/devicestate"
 	"hidroponic/cmd/hidroponic/http/handler/installationconfig"
 	"hidroponic/cmd/hidroponic/http/handler/nutritionwaterlevel"
 	"hidroponic/cmd/hidroponic/http/handler/plant"
@@ -26,6 +27,7 @@ type apiRouter struct {
 	nutritionWaterLevelController *nutritionwaterlevel.NutritionWaterLevelHandlers
 	plantController               *plant.PlantHandlers
 	instalatinoConfigController   *installationconfig.InstallationConfigHandlers
+	deviceStateController         *devicestate.DeviceStateHnalders
 }
 
 func Init(httpService *httpserver.HttpService, wss *websocket.WebSocketService, dep *dependencies.Dependency) {
@@ -38,6 +40,7 @@ func Init(httpService *httpserver.HttpService, wss *websocket.WebSocketService, 
 		nutritionWaterLevelController: nutritionwaterlevel.New(dep.NutritionWaterLevelUsecase),
 		plantController:               plant.New(dep.PlantUsecase),
 		instalatinoConfigController:   installationconfig.New(dep.InstallationConfigUsecase),
+		deviceStateController:         devicestate.New(),
 	}
 
 	router.baseRoute.HandleFunc("/ping", router.ping).Methods(http.MethodGet)
@@ -74,6 +77,8 @@ func (ar apiRouter) initApiv1() {
 
 	apiv1Route.HandleFunc("/installation-configs", ar.instalatinoConfigController.GetInstallationConfig).Methods(http.MethodGet)
 	apiv1Route.HandleFunc("/installation-configs", ar.instalatinoConfigController.UpdatePlant).Methods(http.MethodPut)
+
+	apiv1Route.HandleFunc("/device-states", ar.deviceStateController.GetDeviceState).Methods(http.MethodGet)
 }
 
 func (apiRouter) notFound(w http.ResponseWriter, r *http.Request) {

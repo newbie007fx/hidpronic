@@ -15,7 +15,7 @@ type Automation struct {
 	Duration    int          `json:"duration"`
 	Status      types.Status `json:"status"`
 	TriggeredAt time.Time    `json:"triggered_at"`
-	FinishedAt  time.Time    `json:"finished_at"`
+	FinishedAt  *time.Time   `json:"finished_at"`
 	Plant       SimplePlant  `json:"plant"`
 }
 
@@ -27,7 +27,7 @@ type AutomationBasic struct {
 	Duration    int          `json:"duration"`
 	Status      types.Status `json:"status"`
 	TriggeredAt time.Time    `json:"triggered_at"`
-	FinishedAt  time.Time    `json:"finished_at"`
+	FinishedAt  *time.Time   `json:"finished_at"`
 	Plant       SimplePlant  `json:"plant"`
 }
 
@@ -44,7 +44,7 @@ type InitAutomationResponse struct {
 	TargetWaterVolume     float32
 }
 
-type CalcualteNutritionNeeded struct {
+type CalculateNutritionNeeded struct {
 	CurrentNutritionWaterVolume float32
 	TargetNutritionWaterVolume  float32
 	CurrentNutritionWaterPPM    float32

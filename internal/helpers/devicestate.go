@@ -3,6 +3,7 @@ package helpers
 import (
 	"hidroponic/internal/constants"
 	"hidroponic/internal/platform/mqtt"
+	"hidroponic/internal/platform/websocket"
 	"hidroponic/internal/types"
 )
 
@@ -12,6 +13,7 @@ const topic string = "device_state"
 
 type deviceState struct {
 	mqttService *mqtt.MqttService
+	wsService   *websocket.WebSocketService
 	state       types.DeviceState
 }
 
@@ -21,6 +23,7 @@ func (ap *deviceState) SetState(state types.DeviceState) *deviceState {
 	}
 
 	ap.state = state
+	ap.wsService.Broadcast("deviceState", map[string]types.DeviceState{"stete": state})
 	return ap
 }
 
