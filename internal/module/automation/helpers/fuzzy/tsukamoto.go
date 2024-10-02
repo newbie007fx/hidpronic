@@ -155,7 +155,7 @@ func (f TsukamotoFIS) Inference(temperature, nutrition, volume float32) float32 
 	var numerator, denominator float32
 	for _, rule := range rulesOn {
 		alphaPredicate := slices.Min(rule)
-		zRule := RESULT_MAX_VALUE*alphaPredicate + RESULT_MIN_VALUE
+		zRule := (RESULT_MAX_VALUE-RESULT_MIN_VALUE)*alphaPredicate + RESULT_MIN_VALUE
 		numerator += alphaPredicate * zRule
 		denominator += alphaPredicate
 	}
