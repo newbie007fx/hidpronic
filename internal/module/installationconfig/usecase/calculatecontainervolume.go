@@ -22,7 +22,7 @@ func (u *Usecase) calculateContainerVolumeByConfig(entity entities.ContainerConf
 		finalHeight = entity.Height - distance
 	}
 	area := entity.BottomArea + ((entity.TopArea-entity.BottomArea)/(entity.Height-entity.SensorGap))*finalHeight
-	volume = 0.5 * (entity.BottomArea + area) * finalHeight
+	volume = float32(1) / float32(3) * finalHeight * (area + entity.BottomArea + float32(math.Sqrt(float64(entity.BottomArea)))*float32(math.Sqrt(float64(area))))
 	if volume < 0 {
 		volume = 0
 	} else {
