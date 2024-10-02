@@ -22,7 +22,7 @@ func TestInferenceTemperatureLowNutritionLowWaterLow(t *testing.T) {
 		t.Error("value above threshold")
 	}
 
-	value = fis.Inference(22, 95, 1001)
+	value = fis.Inference(22, 93, 1001)
 	t.Log("fuzzy value is ", value)
 	if value < fuzzy.THRESHOLD {
 		t.Error("value above threshold", value)
@@ -73,7 +73,7 @@ func TestInferenceTemperatureLowNutritionOptimalWaterLow(t *testing.T) {
 func TestInferenceTemperatureOptimalNutritionOptimalWaterLow(t *testing.T) {
 	fis := getFis()
 
-	value := fis.Inference(26, 104, 1350)
+	value := fis.Inference(26, 102, 1150)
 	t.Log("fuzzy value is ", value)
 	if value < fuzzy.THRESHOLD {
 		t.Error("value below threshold")
@@ -224,7 +224,7 @@ func TestInferenceTemperatureHighNutritionLowWaterHigh(t *testing.T) {
 func TestInferenceTemperatureLowNutritionOptimalWaterMedium(t *testing.T) {
 	fis := getFis()
 
-	value := fis.Inference(21, 102, 2550)
+	value := fis.Inference(21, 101, 2500)
 	t.Log("fuzzy value is ", value)
 	if value > fuzzy.THRESHOLD {
 		t.Error("value above threshold")
@@ -300,6 +300,63 @@ func TestInferenceTemperatureHighNutritionHighWaterHigh(t *testing.T) {
 	t.Log("fuzzy value is ", value)
 	if value > fuzzy.THRESHOLD {
 		t.Error("value above threshold")
+	}
+}
+
+func TestAbsolutValue(t *testing.T) {
+	fis := getFis()
+
+	var data map[string][]float32 = map[string][]float32{
+		"rendah sedikit dingin":   {90, 1000, 20, 3},
+		"rendah sedikit optimal":  {90, 1000, 25, 3},
+		"rendah sedikit panas":    {90, 1000, 30, 3},
+		"optimal sedikit dingin":  {100, 1000, 20, 3},
+		"optimal sedikit optimal": {100, 1000, 25, 3},
+		"optimal sedikit panas":   {100, 1000, 30, 3},
+		"tinggi sedikit dingin":   {110, 1000, 20, 3},
+		"tinggi sedikit optimal":  {110, 1000, 20, 3},
+		"tinggi sedikit panas":    {110, 1000, 30, 3},
+		"rendah sedang dingin":    {90, 2500, 20, 3},
+		"rendah sedang optimal":   {90, 2500, 25, 3},
+		"rendah sedang panas":     {90, 2500, 30, 3},
+		"optimal sedang dingin":   {100, 2500, 20, 1},
+		"optimal sedang optimal":  {100, 2500, 25, 1},
+		"optimal sedang panas":    {100, 2500, 30, 3},
+		"tinggi sedang dingin":    {110, 2500, 20, 3},
+		"tinggi sedang optimal":   {110, 2500, 25, 3},
+		"tinggi sedang panas":     {110, 2500, 30, 3},
+		"rendah banyak dingin":    {90, 3000, 20, 3},
+		"rendah banyak optimal":   {90, 3000, 25, 3},
+		"rendah banyak panas":     {90, 3000, 30, 3},
+		"optimal banyak dingin":   {100, 3000, 20, 1},
+		"optimal banyak optimal":  {100, 3000, 25, 1},
+		"optimal banyak panas":    {100, 3000, 30, 1},
+		"tinggi banyak dingin":    {110, 3000, 20, 1},
+		"tinggi banyak optimal":   {110, 3000, 25, 1},
+		"tinggi banyak panas":     {110, 3000, 30, 1},
+	}
+
+	for k, v := range data {
+		value := fis.Inference(v[2], v[0], v[1])
+		t.Logf("%s: fuzzy value is %f", k, value)
+		if value != v[3] {
+			t.Error("invalid value")
+		}
+	}
+}
+
+func TestScopeValue(t *testing.T) {
+	fis := getFis()
+
+	var nutrition, volume, temperature float32 = 100, 2500, 20
+
+	for range 11 {
+		value := fis.Inference(temperature, nutrition, volume)
+		t.Logf("%f, %f, %f : fuzzy value is %f", nutrition, volume, temperature, value)
+
+		nutrition += 1
+		volume += 50
+		temperature += 0.5
 	}
 }
 
